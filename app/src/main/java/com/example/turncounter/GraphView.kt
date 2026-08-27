@@ -41,9 +41,11 @@ class GraphView @JvmOverloads constructor(
 
     fun addPoint(value: Float) {
         points.addLast(value)
+
         while (points.size > maxPoints) {
             points.removeFirst()
         }
+
         postInvalidate()
     }
 
