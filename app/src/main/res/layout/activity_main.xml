@@ -15,6 +15,17 @@
             android:text="Счётчик витков по магнитному полю"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- НОВЫЙ БЛОК ДИАГНОСТИКИ -->
+        <TextView
+            android:id="@+id/sensorStatusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Датчик: инициализация..."
+            android:textSize="14sp"
+            android:textColor="#D32F2F"
+            android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
         <TextView
@@ -168,7 +179,6 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Старт" />
-
         </LinearLayout>
 
         <Button
@@ -181,9 +191,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Совет: закрепите магнит на вращающейся части катушки/шпули. Один оборот должен давать повторяющийся всплеск магнитного поля. Если один виток даёт два импульса, поставьте событий на виток = 2."
+            android:text="Совет: закрепите магнит на вращающейся части катушки. Один оборот должен давать повторяющийся всплеск магнитного поля."
             android:textSize="13sp" />
 
     </LinearLayout>
-
 </ScrollView>
