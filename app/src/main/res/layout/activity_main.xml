@@ -40,7 +40,7 @@
             android:id="@+id/infoText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="B: - | сигнал: - | порог: -"
+            android:text="B: - | Δ: - | sig: - | thr: -"
             android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
@@ -69,14 +69,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"
-            android:progress="16"
+            android:progress="6"
             android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/thresholdValueText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Порог: 8.0 мкТл"
+            android:text="Порог: 3.0 мкТл"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
 
@@ -91,14 +91,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="2000"
-            android:progress="250"
+            android:progress="120"
             android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/intervalValueText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Интервал: 250 мс"
+            android:text="Интервал: 120 мс"
             android:textSize="14sp"
             android:layout_marginBottom="16dp" />
 
@@ -129,7 +129,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Адаптивный порог"
-            android:checked="true"
+            android:checked="false"
             android:layout_marginBottom="8dp" />
 
         <CheckBox
@@ -181,7 +181,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Совет: закрепите магнит на вращающейся части катушки/шпули. Один оборот должен давать один или несколько повторяющихся всплесков магнитного поля. Если один виток даёт два импульса, поставьте событий на виток = 2."
+            android:text="Совет: закрепите магнит на вращающейся части катушки/шпули. Один оборот должен давать повторяющийся всплеск магнитного поля. Если один виток даёт два импульса, поставьте событий на виток = 2."
             android:textSize="13sp" />
 
     </LinearLayout>
