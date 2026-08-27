@@ -41,9 +41,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lastDisplayedCount = 0
     private var eventsPerTurn = 1
 
-    private var baseline = 0f
+    private var baselineX = 0f
+    private var baselineY = 0f
+    private var baselineZ = 0f
     private var baselineReady = false
 
+    private var signalMean = 0f
     private var noise = 0f
     private var smoothedSignal = 0f
 
@@ -53,32 +56,38 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var lastEventTime = 0L
     private var lastUiUpdate = 0L
 
-    private var userThreshold = 8f
-    private var minIntervalMs = 250L
+    private var userThreshold = 3f
+    private var minIntervalMs = 120L
 
-    private var autoThreshold = true
+    private var autoThreshold = false
     private var soundEnabled = true
     private var vibrationEnabled = false
 
     private var toneGenerator: ToneGenerator? = null
     private var vibrator: Vibrator? = null
 
-    private val seekListener = object : SeekBar.OnSeekBarChangeListener {
-        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            when (seekBar) {
-                binding.thresholdSeekBar -> updateThreshold()
-                binding.intervalSeekBar -> updateInterval()
-                binding.dividerSeekBar -> updateDivider()
+    private val seekListener by lazy {
+        object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(
+                seekBar: SeekBar?,
+                progress: Int,
+                fromUser: Boolean
+            ) {
+                when (seekBar) {
+                    binding.thresholdSeekBar -> updateThreshold()
+                    binding.intervalSeekBar -> updateInterval()
+                    binding.dividerSeekBar -> updateDivider()
+                }
+
+                if (fromUser) {
+                    saveSettings()
+                }
             }
 
-            if (fromUser) {
-                saveSettings()
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         }
-
-        override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-        override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,16 +119,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun loadSettings() {
-        binding.thresholdSeekBar.progress = prefs.getInt("threshold_progress", 16)
-        binding.intervalSeekBar.progress = prefs.getInt("interval_progress", 250)
-        binding.dividerSeekBar.progress = prefs.getInt("divider_progress", 0)
+        binding.thresholdSeekBar.progress = prefs.getInt("threshold_progress_v3", 6)
+        binding.intervalSeekBar.progress = prefs.getInt("interval_progress_v3", 120)
+        binding.dividerSeekBar.progress = prefs.getInt("divider_progress_v3", 0)
 
-        binding.autoThresholdCheckBox.isChecked = prefs.getBoolean("auto_threshold", true)
-        binding.soundCheckBox.isChecked = prefs.getBoolean("sound", true)
-        binding.vibrationCheckBox.isChecked = prefs.getBoolean("vibration", false)
+        binding.autoThresholdCheckBox.isChecked = prefs.getBoolean("auto_threshold_v3", false)
+        binding.soundCheckBox.isChecked = prefs.getBoolean("sound_v3", true)
+        binding.vibrationCheckBox.isChecked = prefs.getBoolean("vibration_v3", false)
 
-        rawCount = prefs.getInt("raw_count", 0)
-        userWantsListening = prefs.getBoolean("listening", true)
+        rawCount = prefs.getInt("raw_count_v3", 0)
+        userWantsListening = prefs.getBoolean("listening_v3", true)
 
         updateThreshold()
         updateInterval()
@@ -167,20 +176,32 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun updateThreshold() {
         userThreshold = binding.thresholdSeekBar.progress * 0.5f
-        binding.thresholdValueText.text =
-            String.format(Locale.US, "Порог: %.1f мкТл", userThreshold)
+
+        binding.thresholdValueText.text = String.format(
+            Locale.US,
+            "Порог: %.1f мкТл",
+            userThreshold
+        )
     }
 
     private fun updateInterval() {
         minIntervalMs = binding.intervalSeekBar.progress.toLong()
-        binding.intervalValueText.text =
-            String.format(Locale.US, "Интервал: %d мс", minIntervalMs)
+
+        binding.intervalValueText.text = String.format(
+            Locale.US,
+            "Интервал: %d мс",
+            minIntervalMs
+        )
     }
 
     private fun updateDivider() {
         eventsPerTurn = binding.dividerSeekBar.progress + 1
-        binding.dividerValueText.text =
-            String.format(Locale.US, "Событий на виток: %d", eventsPerTurn)
+
+        binding.dividerValueText.text = String.format(
+            Locale.US,
+            "Событий на виток: %d",
+            eventsPerTurn
+        )
 
         lastDisplayedCount = displayedCount()
         updateCount()
@@ -196,26 +217,25 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun updateCount() {
         binding.countText.text = String.format(Locale.US, "%d", displayedCount())
-        binding.rawCountText.text =
-            String.format(Locale.US, "Сырые события: %d", rawCount)
+        binding.rawCountText.text = String.format(Locale.US, "Сырые события: %d", rawCount)
     }
 
     private fun saveSettings() {
         prefs.edit()
-            .putInt("threshold_progress", binding.thresholdSeekBar.progress)
-            .putInt("interval_progress", binding.intervalSeekBar.progress)
-            .putInt("divider_progress", binding.dividerSeekBar.progress)
-            .putBoolean("auto_threshold", autoThreshold)
-            .putBoolean("sound", soundEnabled)
-            .putBoolean("vibration", vibrationEnabled)
-            .putBoolean("listening", userWantsListening)
-            .putInt("raw_count", rawCount)
+            .putInt("threshold_progress_v3", binding.thresholdSeekBar.progress)
+            .putInt("interval_progress_v3", binding.intervalSeekBar.progress)
+            .putInt("divider_progress_v3", binding.dividerSeekBar.progress)
+            .putBoolean("auto_threshold_v3", autoThreshold)
+            .putBoolean("sound_v3", soundEnabled)
+            .putBoolean("vibration_v3", vibrationEnabled)
+            .putBoolean("listening_v3", userWantsListening)
+            .putInt("raw_count_v3", rawCount)
             .apply()
     }
 
     private fun saveCount() {
         prefs.edit()
-            .putInt("raw_count", rawCount)
+            .putInt("raw_count_v3", rawCount)
             .apply()
     }
 
@@ -224,7 +244,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         lastDisplayedCount = 0
 
         baselineReady = false
-        baseline = 0f
+        baselineX = 0f
+        baselineY = 0f
+        baselineZ = 0f
+
+        signalMean = 0f
         noise = 0f
         smoothedSignal = 0f
 
@@ -267,6 +291,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 magneticSensor,
                 SensorManager.SENSOR_DELAY_FASTEST
             )
+
             listening = true
         } catch (_: Exception) {
             listening = false
@@ -355,9 +380,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private fun currentThreshold(): Float {
         return if (autoThreshold) {
-            max(userThreshold, 2.5f * noise + 0.5f)
+            max(userThreshold, 1.8f * noise + 0.15f)
         } else {
-            max(userThreshold, 0.1f)
+            max(userThreshold, 0.15f)
         }
     }
 
@@ -405,29 +430,58 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val now = SystemClock.elapsedRealtime()
 
         if (!baselineReady) {
-            baseline = field
+            baselineX = x
+            baselineY = y
+            baselineZ = z
             baselineReady = true
+
+            signalMean = 0f
             noise = 0f
             smoothedSignal = 0f
         } else {
-            baseline = 0.98f * baseline + 0.02f * field
+            // Очень медленная адаптация базового вектора.
+            // Если ложных срабатываний много, можно увеличить коэффициент,
+            // например до 0.002f или 0.005f.
+            val baselineAlpha = 0.0008f
+
+            baselineX = (1f - baselineAlpha) * baselineX + baselineAlpha * x
+            baselineY = (1f - baselineAlpha) * baselineY + baselineAlpha * y
+            baselineZ = (1f - baselineAlpha) * baselineZ + baselineAlpha * z
         }
 
-        val rawSignal = abs(field - baseline)
+        val dx = x - baselineX
+        val dy = y - baselineY
+        val dz = z - baselineZ
 
-        smoothedSignal = 0.7f * smoothedSignal + 0.3f * rawSignal
-        noise = 0.95f * noise + 0.05f * rawSignal
+        // Сумма абсолютных изменений по осям лучше реагирует на изменение
+        // направления вектора магнитного поля, чем просто модуль поля.
+        val vectorChange = abs(dx) + abs(dy) + abs(dz)
+
+        // Убираем медленную постоянную составляющую.
+        // Если сигнал слишком медленно затухает, можно увеличить meanAlpha,
+        // например до 0.005f.
+        val meanAlpha = 0.002f
+        signalMean = (1f - meanAlpha) * signalMean + meanAlpha * vectorChange
+
+        // Полезный сигнал: превышение над средним уровнем.
+        val detectSignal = max(0f, vectorChange - signalMean)
+
+        smoothedSignal = 0.85f * smoothedSignal + 0.15f * detectSignal
+        noise = 0.98f * noise + 0.02f * detectSignal
 
         val threshold = currentThreshold()
-        val detectSignal = smoothedSignal
 
         if (detectSignal > threshold) {
-            aboveThresholdCount++
+            if (aboveThresholdCount < 10) {
+                aboveThresholdCount++
+            } else {
+                aboveThresholdCount = 10
+            }
         } else {
             aboveThresholdCount = 0
         }
 
-        if (armed && aboveThresholdCount >= 2 && now - lastEventTime >= minIntervalMs) {
+        if (armed && aboveThresholdCount >= 1 && now - lastEventTime >= minIntervalMs) {
             rawCount++
             lastEventTime = now
             armed = false
@@ -455,28 +509,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             }
         }
 
-        if (!armed && detectSignal < 0.55f * threshold) {
+        if (!armed && detectSignal < 0.7f * threshold) {
             armed = true
             aboveThresholdCount = 0
         }
 
-        if (now - lastUiUpdate >= 100L) {
+        if (now - lastUiUpdate >= 80L) {
             lastUiUpdate = now
 
             runUi {
                 binding.infoText.text = String.format(
                     Locale.US,
-                    "B=%.1f мкТл | сигнал=%.1f | порог=%.1f",
+                    "B=%.1f | Δ=%.2f | sig=%.2f | thr=%.2f",
                     field,
+                    vectorChange,
                     detectSignal,
                     threshold
                 )
 
-                binding.statusText.text = if (armed) {
-                    "Ожидание пика"
-                } else {
-                    "Пик обнаружен"
-                }
+                binding.statusText.text = String.format(
+                    Locale.US,
+                    "%s | armed=%b | above=%d",
+                    if (armed) "Ожидание пика" else "Пик обнаружен",
+                    armed,
+                    aboveThresholdCount
+                )
 
                 binding.graphView.addPoint(detectSignal)
                 binding.graphView.setThreshold(threshold)
